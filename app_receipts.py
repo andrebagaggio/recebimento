@@ -122,12 +122,12 @@ def montar_payloads(df, m, cfg):
                         "storerkey": valor_campo(linha, m["storerkey"], cfg["storerkey_fixo"]),
                         "qtyexpected": fmt_qtd(esperada),
                         "qtyreceived": fmt_qtd(recebida),
-                        "toid": "",  # fixo em branco
+                        "toid": valor_campo(linha, m["toid"], cfg["toid_fixo"]),  # coluna "Nº placa lic."
                         "status": cfg["status_detalhe"],
                         "conditioncode": valor_campo(linha, m["conditioncode"], cfg["conditioncode_fixo"]),
                         "toloc": valor_campo(linha, m["toloc"], cfg["toloc_fixo"]),
                         "lottable02": chave,  # igual ao receiptkey enviado
-                        "lottable03": limpar(linha.get(m["toid"])),  # vem da coluna mapeada como toid
+                        "lottable03": valor_campo(linha, m["lottable03"], cfg["lottable03_fixo"]),
                     }
                 )
 
@@ -253,7 +253,8 @@ with c2:
         "qtyreceived", sugerir(cols, "qtyreceived", "recebida"), opcoes_extra=[FIXO]
     )
 with c3:
-    mapa["toid"] = escolher("toid (vai para lottable03)", sugerir(cols, "toid", "lpn", "id"))
+    mapa["toid"] = escolher("toid (Nº placa lic.)", sugerir(cols, "placa", "toid", "lpn"), opcoes_extra=[FIXO])
+    mapa["lottable03"] = escolher("lottable03", mapa["toid"], opcoes_extra=[FIXO])
     mapa["toloc"] = escolher("toloc", sugerir(cols, "toloc", "local", "endereco"), opcoes_extra=[FIXO])
 with c4:
     mapa["storerkey"] = escolher("storerkey", sugerir(cols, "storer", "cliente"), opcoes_extra=[FIXO])
@@ -261,7 +262,8 @@ with c4:
         "conditioncode", sugerir(cols, "condition", "condicao"), opcoes_extra=[FIXO]
     )
 
-st.caption("Quando a coluna é “valor fixo”, vale o que estiver na barra lateral. Se qtyreceived for fixo, copia a qtyexpected.")
+st.caption("Quando a coluna é “valor fixo”, vale o que estiver na barra lateral (toid e lottable03 ficam em branco). "
+           "Se qtyreceived for fixo, copia a qtyexpected.")
 
 cfg = {
     "status_header": status_header,
@@ -269,6 +271,8 @@ cfg = {
     "storerkey_fixo": storerkey_fixo,
     "toloc_fixo": toloc_fixo,
     "conditioncode_fixo": conditioncode_fixo,
+    "toid_fixo": "",
+    "lottable03_fixo": "",
 }
 
 obrigatorias_ok = len({mapa["receiptkey"], mapa["sku"], mapa["qtyexpected"]}) == 3
